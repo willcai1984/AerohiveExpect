@@ -52,7 +52,7 @@ class ExpectArgs(object):
         self.parse.add_argument('-sp', '--shellpasswd', required=False, default='', dest='sp',
                             help='Shell password for enter to shell mode')
 
-        self.parse.add_argument('--debug', required=False, default='error', choices=['debug','info', 'warn', 'error'], dest='debug_level',
+        self.parse.add_argument('--debug', required=False, default='error', choices=['debug', 'info', 'warn', 'error'], dest='debug_level',
                             help='Debug mode, info>warn>error')
 
         self._parse_args()
@@ -92,97 +92,126 @@ class ExpectConnect(object):
         self.retry = self.args.retry
         self.sp = self.args.sp
         self.debug_level = self.args.debug_level
+        self.spawn=None
+        self.is_user=False
+        self.is_passwd=False
+        self.is_prompt=False
+        self.is_no=False
+        self.is_error=False
         
+        
+        self._debug()
 
-    
     def __str__(self):
         s = []
-        s.append('remote-selenium = %s' % self.remote_selenium)
-        s.append('browser-type = %s' % self.browser_type)
-        if self.browser_type == 'ff':
-            s.append('browser-profile = %s' % self.browser_profile)
-        s.append('log-level = %s' % self.log_level)
-        s.append('log-file = %s' % self.log_file)
-        s.append('log-pic-dir = %s' % self.log_pic_dir)
-        s.append('para_dict = %s' % str(self.para_dict))
-        s.append('preserve-session = %s' % self.preserve_session)
-        s.append('session-id = %s' % self.session_id)
+        s.append('Mode         = %s' % self.mode)
+        s.append('IP           = %s' % self.browser_type)
+        s.append('Port         = %s' % self.log_level)
+        s.append('User         = %s' % self.log_file)
+        s.append('Passwd       = %s' % self.log_pic_dir)
+        s.append('Prompt       = %s' % str(self.para_dict))
+        s.append('Timeout      = %s' % self.preserve_session)
+        s.append('Log_file     = %s' % self.session_id)
+        for i in self.cli_list:
+            s.append('CLI          = %s' % i)
+        s.append('Config_file  = %s' % self.config_file)
+        s.append('Wait         = %s' % self.wait)
+        s.append('Retry        = %s' % self.retry)
+        s.append('Shell_passwd = %s' % self.sp)
+        s.append('Debug_level  = %s' % self.debug_level)
         return '\n'.join(s)
 
-
-
-    def general_login(spawn_chlid, user, passwd, prompt, login_timeout=2, login_retry_times=10, is_user=False, is_passwd=False, is_no=False, is_prompt=False, is_error=False, is_debug=False):
-        general_login_result = spawn_chlid
-        if is_user:
-            debug('Meet login successfully, send user to confirm login', is_debug)
-            debug('............Step1 send user to confirm login............', is_debug)            
+    def gen_login(self):
+        if self.is_user:
+            info('Meet login successfully, send user to confirm login', self.is_info)
+            info('............Step1 send user to confirm login............', self.is_info)            
             cli_mode_tuple_list = [(user, 'sendline')]
             expect_list = [pexpect.TIMEOUT, '[Pp]assword.*']
             timeout = login_timeout
             # ##only need expect func, sendnone
             retry_cli_mode_tuple_list = [[('', 'sendnone')]] * login_retry_times
-            general_login_info = spawn_timeout_retry(cli_mode_tuple_list, expect_list, timeout, retry_cli_mode_tuple_list , login_retry_times, general_login_result, is_debug)
+            general_login_info = spawn_timeout_retry(cli_mode_tuple_list, expect_list, timeout, retry_cli_mode_tuple_list , login_retry_times, general_login_result, self.is_info)
             general_login_result = general_login_info[0]
             general_login_index = general_login_info[1]
             if general_login_index == 0:
                 print 'Send user to confirm login timeout, please confirm the host is alive'
                 is_error = True
-                debug('''From is_user jump to is_error''', is_debug)
+                info('''From is_user jump to is_error''', self.is_info)
             elif general_login_index == 1:                  
                 is_passwd = True
-                debug('''From is_user jump to is_passwd process ''', is_debug)
+                info('''From is_user jump to is_passwd process ''', self.is_info)
         if is_passwd:
-            debug('Meet password successfully, send passwd to confirm login', is_debug)
-            debug('............Step2 send password to confirm login............', is_debug)
+            info('Meet password successfully, send passwd to confirm login', self.is_info)
+            info('............Step2 send password to confirm login............', self.is_info)
             cli_mode_tuple_list = [(passwd, 'sendline')]
             expect_list = [pexpect.TIMEOUT, '\nlogin.*', '[Pp]assword.*', 'yes\|no>:.*', prompt]
             timeout = login_timeout
             # ##only need expect func, sendnone
             retry_cli_mode_tuple_list = [[('', 'sendnone')]] * login_retry_times
-            general_login_info = spawn_timeout_retry(cli_mode_tuple_list, expect_list, timeout, retry_cli_mode_tuple_list , login_retry_times, general_login_result, is_debug)
+            general_login_info = spawn_timeout_retry(cli_mode_tuple_list, expect_list, timeout, retry_cli_mode_tuple_list , login_retry_times, general_login_result, self.is_info)
             general_login_result = general_login_info[0]
             general_login_index = general_login_info[1]
             if general_login_index == 0:
                 print 'Send password to confirm login timeout, please confirm the host is alive'
                 is_error = True
-                debug('''From is_passwd jump to is_error''', is_debug)
+                info('''From is_passwd jump to is_error''', self.is_info)
             elif general_login_index == 1:
                 print 'Meet login again, user or password maybe incorrect, please check'
                 is_error = True
-                debug('''From is_passwd jump to is_error''', is_debug)
+                info('''From is_passwd jump to is_error''', self.is_info)
             elif general_login_index == 2:
                 print 'Meet password again, password maybe incorrect, please check'
                 is_error = True
-                debug('''From is_passwd jump to is_error''', is_debug)                         
+                info('''From is_passwd jump to is_error''', self.is_info)                         
             elif general_login_index == 3:
                 is_no = True
-                debug('''From is_passwd jump to is_no process ''', is_debug)
+                info('''From is_passwd jump to is_no process ''', self.is_info)
             elif general_login_index == 4:
                 is_prompt = True
-                debug('''From is_passwd jump to is_prompt process ''', is_debug)
+                info('''From is_passwd jump to is_prompt process ''', self.is_info)
         if is_no:
-            debug('Meet is_default yes or no successfully, send no to not use default config', is_debug)
-            debug('............Step3 send no to not use default config............', is_debug)
+            info('Meet is_default yes or no successfully, send no to not use default config', self.is_info)
+            info('............Step3 send no to not use default config............', self.is_info)
             cli_mode_tuple_list = [('no', 'sendline')]
             expect_list = [pexpect.TIMEOUT, prompt]
             timeout = login_timeout
             # ##only need expect func, sendnone
             retry_cli_mode_tuple_list = [[('', 'sendnone')]] * login_retry_times
-            general_login_info = spawn_timeout_retry(cli_mode_tuple_list, expect_list, timeout, retry_cli_mode_tuple_list , login_retry_times, general_login_result, is_debug)
+            general_login_info = spawn_timeout_retry(cli_mode_tuple_list, expect_list, timeout, retry_cli_mode_tuple_list , login_retry_times, general_login_result, self.is_info)
             general_login_result = general_login_info[0]
             general_login_index = general_login_info[1]            
             if general_login_index == 0:
                 print 'Send no to confirm login timeout, please confirm the host is alive'
                 is_error = True
-                debug('''From is_no jump to is_error''', is_debug)
+                info('''From is_no jump to is_error''', self.is_info)
             elif general_login_index == 1:
                 is_prompt = True
-                debug('''From is_no jump to is_prompt''', is_debug)
+                info('''From is_no jump to is_prompt''', self.is_info)
         if is_prompt:
-            debug('Meet prompt successfully, can execute cli now', is_debug)
+            info('Meet prompt successfully, can execute cli now', self.is_info)
         if is_error:
             ###v22 del telnet_login_result
             print 'before is %s, after is %s' % (general_login_result.before, general_login_result.after)
             general_login_result.close(force=True)
             return None        
         return general_login_result
+
+    def _debug(self):
+        self.is_debug=False
+        self.is_info=False
+        self.is_warn=False
+        self.is_error=False
+        if self.debug_level=='debug':
+            self.is_debug=True
+            self.is_info=True
+            self.is_warn=True
+            self.is_error=True          
+        elif self.debug_level=='info':
+            self.is_info=True
+            self.is_warn=True
+            self.is_error=True   
+        elif self.debug_level=='warn':
+            self.is_warn=True
+            self.is_error=True   
+        elif self.debug_level=='error':
+            self.is_error=True
