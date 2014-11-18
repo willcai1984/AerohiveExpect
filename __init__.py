@@ -7,58 +7,69 @@ try:
 except ImportError, e:
     raise ImportError (str(e) + """A critical module was not found. Probably this operating system does not support it.""")
 
-class console_host:
-    def __init__(self, ip, serialname, user, passwd, absolute_logfile='', prompt='[$#>]', wait_time=0, is_debug=False):
-        self.ip = ip
-        self.serialname = serialname
-        self.user = user
-        self.passwd = passwd
-        self.is_debug = is_debug
-        self.prompt = prompt
-        self.absolute_logfile = absolute_logfile
-        self.wait_time = wait_time
-        if absolute_logfile == './stdout':
-            pass
-        else:
-            self.absolute_logfile_open = open(absolute_logfile, mode='w')
-        print 'console %s process start, init parameters............' % serialname
-    def __del__(self):
-        if self.absolute_logfile == './stdout':
-            pass
-        else:
-            self.absolute_logfile_open.close()
-            absolute_logfile = self.absolute_logfile
-            
-            with open(absolute_logfile, mode='r') as absolute_logfile_open:
-                originate_logfile = absolute_logfile_open.read()
-            correct_logfile = re.sub(' --More-- \x08\x08\x08\x08\x08\x08\x08\x08\x08\x08          \x08\x08\x08\x08\x08\x08\x08\x08\x08\x08', '', originate_logfile)
-            correct_logfile = re.sub(' {28}|\r', '', correct_logfile)
-            with open(absolute_logfile, mode='w') as absolute_logfile_open:
-                absolute_logfile_open.write(correct_logfile)            
-        print 'console %s process over.' % self.ip
+class ExpectArgs(object):
+    def __init__(self):
+        self.parser = argparse.ArgumentParser(description='Login target and execute cmds')
+
+        self.parse.add_argument('-m', '--mode', required=False, default='ssh' , choices=['ssh', 'telnet'], dest='mode',
+                            help='Login mode')
         
-    def login(self, login_timeout=2, login_retry_times=5):
-        ip = self.ip
-        serialname = self.serialname
-        user = self.user
-        passwd = self.passwd
-        is_debug = self.is_debug
-        prompt = self.prompt
-        log_file_path = self.absolute_logfile
-        if log_file_path == './stdout':
-            log_file_open = []
-        else:
-            log_file_open = self.absolute_logfile_open
-        console_login_result = console_login(ip, user, passwd, serialname, prompt, login_timeout, login_retry_times, log_file_path, log_file_open, is_debug)            
-        return console_login_result
+        self.parse.add_argument('-i', '--ip', required=True, default=None, dest='ip',
+                            help='Target IP')
 
-    def execute_command_via_cli_sendmode_expect_timeout_wait_list(self, spawn_child, cli_sendmode_expect_timeout_wait_list, cli_retry_times=2):
-        is_debug = self.is_debug
-        wait_time = self.wait_time
-        console_cli_result = execute_command_via_cli_sendmode_expect_timeout_wait_list(spawn_child, cli_sendmode_expect_timeout_wait_list, cli_retry_times, is_debug)
-        return console_cli_result
+        self.parse.add_argument('--port', required=False, default=22, type=int, dest='port',
+                            help='Taget port')
 
-    def logout(self, spawn_child, logout_timeout=10, logout_retry_times=5):
-        is_debug = self.is_debug
-        console_logout_result = console_logout(spawn_child, logout_timeout, logout_retry_times, is_debug)
-        return console_logout_result
+        self.parse.add_argument('-u', '--user', required=False, default='admin', dest='user',
+                            help='Login Name')
+        
+        self.parse.add_argument('-p', '--passwd', required=False, default='aerohive', dest='passwd',
+                            help='Login Password')
+
+        self.parse.add_argument('--prompt', required=False, default='AH.*#', dest='prompt',
+                            help='The login prompt you want to meet')
+        
+        self.parse.add_argument('-t', '--timeout', required=False, default=10, type=int, dest='timeout',
+                            help='Time out value for every execute cli step')
+        
+        self.parse.add_argument('-l', '--logfile', required=False, default='.', dest='logfile',
+                            help='The log file path')
+        
+        self.parse.add_argument('-c', '--command', required=False, action='append', default=[], dest='cli_list',
+                            help='The command you want to execute')
+
+        self.parse.add_argument('-f', '--file', required=False, default=False, dest='configfile',
+                            help='The path of configurefile')
+
+        self.parse.add_argument('-w', '--wait', required=False, default=0, type=int, dest='wait',
+                            help='wait time between the current cli and next cli')
+
+        self.parse.add_argument('-r', '--retry', required=False, default=5, type=int, dest='retry',
+                            help='How many times you want to retry when the login step is failed')
+
+        self.parse.add_argument('-sp', '--shellpasswd', required=False, default='', dest='sp',
+                            help='Shell password for enter to shell mode')
+
+        self.parse.add_argument('--debug', required=False, default='error', choices=['info', 'warn', 'error'], dest='debug',
+                            help='Debug mode, info>warn>error')
+
+        self._parse_args()
+        
+    def _parse_args(self):
+        self.args = self.parser.parse_args()
+        self.mode = self.args.mode
+        self.ip = self.args.ip
+        self.port = self.args.port
+        self.user = self.args.user
+        self.passwd = self.args.passwd
+        self.prompt = self.args.prompt
+        self.timeout = self.args.timeout
+        self.logfile = self.args.logfile
+        self.cli_list = self.args.cli_list
+        self.configfile = self.args.configfile
+        self.wait = self.args.wait
+        self.retry = self.args.retry
+        self.sp = self.args.sp
+        self.debug = self.args.debug
+
+
