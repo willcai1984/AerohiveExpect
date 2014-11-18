@@ -3,7 +3,7 @@
 # Author: Will
 
 try:
-    import pexpect, sys, re, time
+    import re, time
 except ImportError, e:
     raise ImportError (str(e) + """A critical module was not found. Probably this operating system does not support it.""")
 
@@ -14,12 +14,27 @@ def sleep(mytime=1):
     time.sleep(mytime)
 
 '''
-Print log to stdout
+Print log based on debug level
 '''
-def debug(mesage, is_debug=True):
-    if mesage and is_debug:
-        print '%s DEBUG' % time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()),
-        print mesage
+def debug(msg, is_debug):
+    if msg and is_debug:
+            print '%s DEBUG' % time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()),
+            print msg
+            
+def info(msg, is_info):
+    if msg and is_info:
+            print '%s INFO ' % time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()),
+            print msg
+            
+def warn(msg, is_warn):
+    if msg and is_warn:
+            print '%s WARN ' % time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()),
+            print msg
+            
+def error(msg, is_error):
+    if msg and is_error:
+            print '%s ERROR' % time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()),
+            print msg
 
 '''
 Transfer str to list
@@ -37,7 +52,7 @@ def str2list(string):
             ran_start=int(i.split('-')[0])
             ran_end=int(i.split('-')[-1])
             for j in range(ran_start,ran_end+1):
-                str_list.append(j)
+                str_list.append(str(j))
         else:
-            str_list.append(i)
+            str_list.append(str(i))
     return str_list
