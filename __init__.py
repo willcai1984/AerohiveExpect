@@ -63,6 +63,10 @@ class ExpectConnect(object):
     def ssh_login(self):
         info('''[LOGIN-SSH]Send cli to login target''', self.is_info)
         self._retry_not_expect('ssh %s@%s -p %s' % (self.user, self.ip, self.port) , 'sendline', [pexpect.TIMEOUT, 'Connection timed out|No route to host.*', 'continue connecting .*\?', '[Pp]assword:', self.prompt])
+        if self.log_file == 'stdout':
+            self.child.logfile_read = sys.stdout
+        else:
+            self.child.logfile_read = self.f_o
         #maybe we can add retry in index 0 and 1
         if self.exec_index == 0:
             self.is_error = True
@@ -99,6 +103,11 @@ class ExpectConnect(object):
     def telnet_login(self):
         info('''[LOGIN-TELNET]Send cli to login target''', self.is_info)
         self._retry_not_expect('telnet %s %s' % (self.ip, self.port) , 'sendline', [pexpect.TIMEOUT, 'No route to host.*', 'Unable .* Connection refused.*', 'Escape character is.*'])
+        if self.log_file == 'stdout':
+            self.child.logfile_read = sys.stdout
+        else:
+            self.child.logfile_read = self.f_o
+        
         #maybe we can add retry in index 0 and 1
         if self.exec_index == 0:
             self.is_error = True
