@@ -88,10 +88,10 @@ class ExpectConnect(object):
                 info('''[LOGIN-SSH]Send 'YES Confirm' successfully, meet prompt''', self.is_info)
                 self.is_prompt = True
                 info('''From 'YES Confirm' jump to is_prompt''', self.is_info)
-        elif self.exec_index == 4:
+        elif self.exec_index == 3:
             self.is_passwd = True
             info('''[LOGIN-SSH]From 'SSH CMD' jump to is_passwd''', self.is_info)
-        elif self.exec_index == 5:
+        elif self.exec_index == 4:
             self.is_prompt = True
             info('''[LOGIN-SSH]From 'SSH CMD' jump to is_prompt''', self.is_info)
         else:
@@ -255,70 +255,71 @@ class ExpectConnect(object):
 
     def _retry_not_expect(self, cli, mode, exp_list, noexp_index=0, retrymode='enter', retry=5, interval=5):
         if self.child:
-            info('spawn child exist, send cli directly', self.is_info)
+            info('''[CLI]spawn child exist, send cli directly''', self.is_info)
             exec_cli = '''self.child.%s(cli)''' % mode
         else:
-            info('spawn child not exist, create spawn firstly', self.is_info)
+            info('''[CLI]spawn child not exist, create spawn firstly''', self.is_info)
             exec_cli = '''self.child=pexpect.spawn(cli)'''
         exec(exec_cli)
         self.exec_index = self.child.expect(list(exp_list), interval)
         if self.exec_index == noexp_index:
-            info('............Trigger Retry Process............', self.is_info)
-            info('CLI         = %s' % cli, self.is_info)
-            info('MODE        = %s' % mode, self.is_info)
-            info('EXPECT_LIST = %s' % str(exp_list), self.is_info)
-            info('RETRY_MODE  = %s' % retrymode, self.is_info)
-            info('RETRY       = %s' % retry, self.is_info)
-            info('INTERVAL    = %s' % interval, self.is_info)
+            info('''[RETRY]Trigger Retry Process''', self.is_info)
+            info('''[RETRY]CLI         = %s''' % cli, self.is_info)
+            info('''[RETRY]MODE        = %s''' % mode, self.is_info)
+            info('''[RETRY]EXPECT_LIST = %s''' % str(exp_list), self.is_info)
+            info('''[RETRY]RETRY_MODE  = %s''' % retrymode, self.is_info)
+            info('''[RETRY]RETRY       = %s''' % retry, self.is_info)
+            info('''[RETRY]INTERVAL    = %s''' % interval, self.is_info)
             for i in xrange(int(retry)):
-                info('Retry %s time start' % (i + 1), self.is_info)
+                info('''[RETRY]Retry %s time start''' % (i + 1), self.is_info)
                 if retrymode == 'enter':
                     self.child.sendline('')
                 elif retrymode == 'repeat':
                     exec(exec_cli)
                 self.exec_index = self.child.expect(list(exp_list), interval)
                 if self.exec_index != noexp_index:
-                    info('............End Retry Process............', self.is_info)
+                    info('''[RETRY]Match expect, end Retry Process''', self.is_info)
                     return
-                info('Retry %s time end' % (i + 1), self.is_info)
+                info('''[RETRY]Retry %s time end''' % (i + 1), self.is_info)
+            info('''[RETRY]Retry %s times, still cannot get expect''' % retry, self.is_info)
         else:
-            info('Match expect, no retry', self.is_info)
+            info('''[CLI]Match expect, no retry''', self.is_info)
             return
-        raise ValueError, '''Retry %s times and still cannot match expect''' % retry
+        raise ValueError, '''[RETRY]Retry %s times and still cannot match expect''' % retry
 
     def _retry_not_expect_list(self, cli, mode, exp_list, noexp_index_list=[0], retrymode='enter', retry=5, interval=5):
         if self.child:
-            info('spawn child exist, send cli directly', self.is_info)
+            info('''[CLI]spawn child exist, send cli directly''', self.is_info)
             exec_cli = '''self.child.%s(cli)''' % mode
         else:
-            info('spawn child not exist, create spawn firstly', self.is_info)
+            info('''[CLI]spawn child not exist, create spawn firstly''', self.is_info)
             exec_cli = '''self.child=pexpect.spawn(cli)'''
         exec(exec_cli)
         self.exec_index = self.child.expect(list(exp_list), interval)
-        noexp_index_list = [int(i) for i in noexp_index_list]
         if self.exec_index in noexp_index_list:
-            info('............Trigger Retry Process............', self.is_info)
-            info('CLI         = %s' % cli, self.is_info)
-            info('MODE        = %s' % mode, self.is_info)
-            info('EXPECT_LIST = %s' % str(exp_list), self.is_info)
-            info('RETRY_MODE  = %s' % retrymode, self.is_info)
-            info('RETRY       = %s' % retry, self.is_info)
-            info('INTERVAL    = %s' % interval, self.is_info)
+            info('''[RETRY]Trigger Retry Process''', self.is_info)
+            info('''[RETRY]CLI         = %s''' % cli, self.is_info)
+            info('''[RETRY]MODE        = %s''' % mode, self.is_info)
+            info('''[RETRY]EXPECT_LIST = %s''' % str(exp_list), self.is_info)
+            info('''[RETRY]RETRY_MODE  = %s''' % retrymode, self.is_info)
+            info('''[RETRY]RETRY       = %s''' % retry, self.is_info)
+            info('''[RETRY]INTERVAL    = %s''' % interval, self.is_info)
             for i in xrange(int(retry)):
-                info('Retry %s time start' % (i + 1), self.is_info)
+                info('''[RETRY]Retry %s time start''' % (i + 1), self.is_info)
                 if retrymode == 'enter':
                     self.child.sendline('')
                 elif retrymode == 'repeat':
                     exec(exec_cli)
                 self.exec_index = self.child.expect(list(exp_list), interval)
                 if self.exec_index not in noexp_index_list:
-                    info('............End Retry Process............', self.is_info)
+                    info('''[RETRY]Match expect, end Retry Process''', self.is_info)
                     return
-                info('Retry %s time end' % (i + 1), self.is_info)
+                info('''[RETRY]Retry %s time end''' % (i + 1), self.is_info)
+            info('''[RETRY]Retry %s times, still cannot get expect''' % retry, self.is_info)
         else:
-            info('Match expect, no retry', self.is_info)
+            info('''[CLI]Match expect, no retry''', self.is_info)
             return
-        raise ValueError, '''Retry %s times and still cannot match expect''' % retry
+        raise ValueError, '''[RETRY]Retry %s times and still cannot match expect''' % retry
      
     def _debug(self):
         self.is_debug = False
