@@ -14,10 +14,11 @@ def connect_exec():
     connect._basic_logout()
 
 if __name__ == '__main__':
-    try:
-        connect_exec()
-    except Exception, e:
-        print str(e)
-        sys.exit(1)
-    else:
-        sys.exit(0)
+    connect_exec()
+#    try:
+#        connect_exec()
+#    except Exception, e:
+#        print str(e)
+#        sys.exit(1)
+#    else:
+#        sys.exit(0)
