@@ -3,7 +3,7 @@
 # Author: Will
 
 try:
-    import re, time, argparse, pexpect
+    import re, time
 except ImportError, e:
     raise ImportError (str(e) + """A critical module was not found. Probably this operating system does not support it.""")
 
@@ -58,70 +58,113 @@ def str2list(string):
     return str_list
 
 
+'''
+Special cli process
+'''
+def generate_cli_mode_expect_timeout_wait_list(cli_list, prompt, timeout, wait, passwd='', sp=''):
+    #define private parameters
+    cli_mode_expect_timeout_wait_list = [] 
+    reboot_timeout = 300
+    save_img_timeout = 1200
+    mode = 'sendline'
+    #def special clis
+    log_regex = re.compile('^show log.*')
+    reset_config_regex = re.compile('^reset config$')
+    reset_boot_regex = re.compile('^reset config bootstrap$') 
+    reboot_regex = re.compile('^reboot$|^reboot backup$|^reboot current$|reboot offset')
+    save_config_regex = re.compile('^save config tftp:.* (current|bootstrap)')
+    save_image_regex = re.compile('^save image tftp:.*img')
+    save_image_reboot_regex = re.compile('^save image tftp:.*now$')
+    shell_regex = re.compile('^_shell$')
+    exit_regex = re.compile('^exit$')
+    enble_regex = re.compile('^enable$')
+    country_regex = re.compile('^boot-param country-code.*')
+    ctrl_regex = re.compile('ctrl-.*')
+    reset_regex = re.compile('^reset$')
+    quit_regex = re.compile('^quit$')
+    scp_vpn_regex = re.compile('^save vpn.*scp.*')
+    scp_img_regex = re.compile('^save image scp.*')
+    scp_toconfig_regex = re.compile('^save config (current|bootstrap) scp.*')
+    scp_fromconfig_regex = re.compile('^save config scp.* (current|bootstrap)')
+    scp_transfer_regex = re.compile(r'> *scp:')
+    #process special clis
+    for cli in cli_list:        
+        if log_regex.search(cli):
+            cli_mode_expect_timeout_wait_list.append((cli, mode, '\w+.*', timeout, wait))
+            cli_mode_expect_timeout_wait_list.append(('', mode, prompt, timeout, wait))
+        elif reset_boot_regex.search(cli):
+            cli_mode_expect_timeout_wait_list.append((cli, mode, 'bootstrap configuration.*', timeout, wait))
+            cli_mode_expect_timeout_wait_list.append(('y', mode, prompt, reboot_timeout, wait))
+        elif reset_config_regex.search(cli):
+            cli_mode_expect_timeout_wait_list.append((cli, mode, 'bootstrap configuration.*', timeout, wait))
+            cli_mode_expect_timeout_wait_list.append(('y', mode, prompt, timeout, wait))
+            cli_mode_expect_timeout_wait_list.append(('', mode, 'login:', reboot_timeout, wait))
+        elif reboot_regex.search(cli):
+            cli_mode_expect_timeout_wait_list.append((cli, mode, 'Do you really want to reboot.*', timeout, wait))
+            cli_mode_expect_timeout_wait_list.append(('y', mode, prompt, timeout, wait))
+            cli_mode_expect_timeout_wait_list.append(('', mode, 'login:.*', reboot_timeout, wait))             
+        elif save_config_regex.search(cli):
+            cli_mode_expect_timeout_wait_list.append((cli, mode, 'configuration.*', timeout, wait))
+            cli_mode_expect_timeout_wait_list.append(('y', mode, prompt, timeout, wait))
+        elif save_image_regex.search(cli):
+            cli_mode_expect_timeout_wait_list.append((cli, mode, r'update image.*', timeout, wait))
+            cli_mode_expect_timeout_wait_list.append(('y', mode, prompt, save_img_timeout, wait))
+        elif save_image_reboot_regex.search(cli):
+            cli_mode_expect_timeout_wait_list.append((cli, mode, 'update image.*', timeout, wait))
+            cli_mode_expect_timeout_wait_list.append(('y', mode, prompt, save_img_timeout, wait))
+            cli_mode_expect_timeout_wait_list.append(('', mode, 'login:.*', reboot_timeout, wait))
+        elif shell_regex.search(cli):
+            if sp:
+                cli_mode_expect_timeout_wait_list.append((cli, mode, '[Pp]assword|%s' % prompt, timeout, wait))
+                cli_mode_expect_timeout_wait_list.append((sp, mode, prompt, timeout, wait))
+            else:
+                cli_mode_expect_timeout_wait_list.append((cli, mode, prompt, timeout, wait))
+        elif exit_regex.search(cli):
+            if sp:
+                cli_mode_expect_timeout_wait_list.append((cli, mode, prompt, timeout, wait))                
+            else:
+                cli_mode_expect_timeout_wait_list.append(('save config', mode, prompt, timeout, wait))
+                cli_mode_expect_timeout_wait_list.append((cli, mode, 'login:.*|%s' % prompt, timeout, wait))  
+        elif enble_regex.search(cli):
+            cli_mode_expect_timeout_wait_list.append((cli, mode, '[Pp]assword.*', timeout, wait))
+            cli_mode_expect_timeout_wait_list.append((passwd, mode, prompt, timeout, wait))             
+        elif country_regex.search(cli):
+            cli_mode_expect_timeout_wait_list.append((cli, mode, 'To apply radio setting.*it now\?.*', timeout, wait))
+            cli_mode_expect_timeout_wait_list.append(('y', mode, prompt, timeout, wait))
+            cli_mode_expect_timeout_wait_list.append(('', mode, 'login:.*', reboot_timeout, wait))  
+        elif ctrl_regex.search(cli):
+            cli = re.sub('[Cc]trl-', '', cli)
+            if  re.search('\+', cli):
+                cli_list = cli.split('+')
+                real_index = 0
+                for real_cli in cli_list:
+                    if real_index == 0:
+                        cli_mode_expect_timeout_wait_list.append((real_cli, 'sendcontrol', 'None', timeout, wait))
+                    elif real_index == len(cli_list) - 1:
+                        cli_mode_expect_timeout_wait_list.append((real_cli, 'send', prompt, timeout, wait))
+                    else:
+                        cli_mode_expect_timeout_wait_list.append((real_cli, 'send', 'None', timeout, wait))
+                    real_index += 1
+            else:
+                cli_mode_expect_timeout_wait_list.append((cli, 'sendcontrol', prompt, timeout, wait))
+        elif reset_regex.search(cli):
+            cli_mode_expect_timeout_wait_list.append((cli, mode, 'login:.*', reboot_timeout, wait))
+        elif quit_regex.search(cli):
+            cli_mode_expect_timeout_wait_list.append((cli, mode, '%s|login:.*' % prompt, timeout, wait))
+        elif scp_vpn_regex.search(cli) or scp_img_regex.search(cli):
+            cli_mode_expect_timeout_wait_list.append((cli, mode, '[Pp]assword:.*', timeout, wait))
+            cli_mode_expect_timeout_wait_list.append((passwd, mode, prompt, timeout, wait))
+        elif scp_toconfig_regex.search(cli):
+            cli_mode_expect_timeout_wait_list.append((cli, mode, '[Pp]assword:.*', timeout, wait))
+            cli_mode_expect_timeout_wait_list.append((passwd, mode, prompt, timeout, wait))      
+        elif scp_fromconfig_regex.search(cli):
+            cli_mode_expect_timeout_wait_list.append((cli, mode, 'config to .* configuration.*', timeout, wait))
+            cli_mode_expect_timeout_wait_list.append(('y', mode, '[Pp]assword:.*', timeout, wait))
+            cli_mode_expect_timeout_wait_list.append((passwd, mode, prompt, timeout, wait))         
+        elif scp_transfer_regex.search(cli):
+            cli_mode_expect_timeout_wait_list.append((cli, mode, '[Pp]assword:.*', timeout, wait))
+            cli_mode_expect_timeout_wait_list.append((passwd, mode, prompt, timeout, wait))
+        else:
+            cli_mode_expect_timeout_wait_list.append((cli, mode, prompt, timeout, wait))
+    return cli_mode_expect_timeout_wait_list
 
-
-
-class ExpectArgs(object):
-    def __init__(self):
-        self.parser = argparse.ArgumentParser(description='Login target and execute cmds')
-
-        self.parse.add_argument('-m', '--mode', required=False, default='ssh' , choices=['ssh', 'telnet'], dest='mode',
-                            help='Login mode')
-        
-        self.parse.add_argument('-i', '--ip', required=True, default=None, dest='ip',
-                            help='Target IP')
-
-        self.parse.add_argument('--port', required=False, default=22, type=int, dest='port',
-                            help='Taget port')
-
-        self.parse.add_argument('-u', '--user', required=False, default='admin', dest='user',
-                            help='Login Name')
-        
-        self.parse.add_argument('-p', '--passwd', required=False, default='aerohive', dest='passwd',
-                            help='Login Password')
-
-        self.parse.add_argument('--prompt', required=False, default='AH.*#', dest='prompt',
-                            help='The login prompt you want to meet')
-        
-        self.parse.add_argument('-t', '--timeout', required=False, default=10, type=int, dest='timeout',
-                            help='Time out value for every execute cli step')
-        
-        self.parse.add_argument('-l', '--logfile', required=False, default='.', dest='log_file',
-                            help='The log file path')
-        
-        self.parse.add_argument('-c', '--command', required=False, action='append', default=[], dest='cli_list',
-                            help='The command you want to execute')
-
-        self.parse.add_argument('-f', '--file', required=False, default=False, dest='config_file',
-                            help='The path of configurefile')
-
-        self.parse.add_argument('-w', '--wait', required=False, default=0, type=int, dest='wait',
-                            help='wait time between the current cli and next cli')
-
-        self.parse.add_argument('-r', '--retry', required=False, default=5, type=int, dest='retry',
-                            help='How many times you want to retry when the login step is failed')
-
-        self.parse.add_argument('-sp', '--shellpasswd', required=False, default='', dest='sp',
-                            help='Shell password for enter to shell mode')
-
-        self.parse.add_argument('--debug', required=False, default='error', choices=['debug', 'info', 'warn', 'error'], dest='debug_level',
-                            help='Debug mode, info>warn>error')
-
-        self._parse_args()
-        
-    def _parse_args(self):
-        self.args = self.parser.parse_args()
-        self.mode = self.args.mode
-        self.ip = self.args.ip
-        self.port = self.args.port
-        self.user = self.args.user
-        self.passwd = self.args.passwd
-        self.prompt = self.args.prompt
-        self.timeout = self.args.timeout
-        self.log_file = self.args.log_file
-        self.cli_list = self.args.cli_list
-        self.config_file = self.args.config_file
-        self.wait = self.args.wait
-        self.retry = self.args.retry
-        self.sp = self.args.sp
-        self.debug_level = self.args.debug_level
