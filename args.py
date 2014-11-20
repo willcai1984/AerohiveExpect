@@ -12,46 +12,46 @@ class ExpectArgs(object):
     def __init__(self):
         self.parser = argparse.ArgumentParser(description='Login target and execute cmds')
 
-        self.parse.add_argument('-m', '--mode', required=False, default='ssh' , choices=['ssh', 'telnet'], dest='mode',
+        self.parser.add_argument('-m', '--mode', required=False, default='ssh' , choices=['ssh', 'telnet'], dest='mode',
                             help='Login mode')
         
-        self.parse.add_argument('-i', '--ip', required=True, default=None, dest='ip',
+        self.parser.add_argument('-i', '--ip', required=True, default=None, dest='ip',
                             help='Target IP')
 
-        self.parse.add_argument('--port', required=False, default=-1, type=int, dest='port',
+        self.parser.add_argument('--port', required=False, default=-1, type=int, dest='port',
                             help='Taget port')
 
-        self.parse.add_argument('-u', '--user', required=False, default='admin', dest='user',
+        self.parser.add_argument('-u', '--user', required=False, default='admin', dest='user',
                             help='Login Name')
         
-        self.parse.add_argument('-p', '--passwd', required=False, default='aerohive', dest='passwd',
+        self.parser.add_argument('-p', '--passwd', required=False, default='aerohive', dest='passwd',
                             help='Login Password')
 
-        self.parse.add_argument('--prompt', required=False, default='AH.*#', dest='prompt',
+        self.parser.add_argument('--prompt', required=False, default='AH.*#', dest='prompt',
                             help='The login prompt you want to meet')
         
-        self.parse.add_argument('-t', '--timeout', required=False, default=10, type=int, dest='timeout',
+        self.parser.add_argument('-t', '--timeout', required=False, default=10, type=int, dest='timeout',
                             help='Time out value for every execute cli step')
         
-        self.parse.add_argument('-l', '--logfile', required=False, default='stdout', dest='log_file',
+        self.parser.add_argument('-l', '--logfile', required=False, default='stdout', dest='log_file',
                             help='The log file path')
         
-        self.parse.add_argument('-c', '--command', required=False, action='append', default=[], dest='cli_list',
+        self.parser.add_argument('-c', '--command', required=False, action='append', default=[], dest='cli_list',
                             help='The command you want to execute')
 
-        self.parse.add_argument('-f', '--file', required=False, default=False, dest='config_file',
+        self.parser.add_argument('-f', '--file', required=False, default=False, dest='config_file',
                             help='The path of configurefile')
 
-        self.parse.add_argument('-w', '--wait', required=False, default=0, type=int, dest='wait',
+        self.parser.add_argument('-w', '--wait', required=False, default=0, type=int, dest='wait',
                             help='wait time between the current cli and next cli')
 
-        self.parse.add_argument('-r', '--retry', required=False, default=5, type=int, dest='retry',
+        self.parser.add_argument('-r', '--retry', required=False, default=5, type=int, dest='retry',
                             help='How many times you want to retry when the login step is failed')
 
-        self.parse.add_argument('-sp', '--shellpasswd', required=False, default='', dest='sp',
+        self.parser.add_argument('-sp', '--shellpasswd', required=False, default='', dest='sp',
                             help='Shell password for enter to shell mode')
 
-        self.parse.add_argument('--debug', required=False, default='error', choices=['debug', 'info', 'warn', 'error'], dest='debug_level',
+        self.parser.add_argument('--debug', required=False, default='error', choices=['debug', 'info', 'warn', 'error'], dest='debug_level',
                             help='Debug mode, info>warn>error')
 
         self._parse_args()
