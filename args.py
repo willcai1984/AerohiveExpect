@@ -21,7 +21,7 @@ class ExpectArgs(object):
         self.parser.add_argument('-p', '--passwd', required=False, default='aerohive', dest='passwd',
                             help='Login Password')
 
-        self.parser.add_argument('--prompt', required=False, default='~ #', dest='prompt',
+        self.parser.add_argument('--prompt', required=False, default='#', dest='prompt',
                             help='The login prompt you want to meet')
         
         self.parser.add_argument('-t', '--timeout', required=False, default=10, type=int, dest='timeout',

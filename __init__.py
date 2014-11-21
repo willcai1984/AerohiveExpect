@@ -23,14 +23,14 @@ class ExpectConnect(object):
         self.config_file = self.args.config_file
         self.wait = self.args.wait
         self.retry = self.args.retry
-        self.para_dict=self.args.para_dict
+        self.para_dict = self.args.para_dict
         self.debug_level = self.args.debug_level
         self.child = None
         self._debug()
         self._tag()
         self._cli()
         self._logfile_init()
-        #use str(self) to print __str__ value
+        # use str(self) to print __str__ value
         info('Expect Args\n' + str(self), self.is_info)
 
     def __del__(self):
@@ -41,23 +41,12 @@ class ExpectConnect(object):
 
     def __str__(self):
         s = []
-<<<<<<< HEAD
         s.append('IP          = %s' % self.ip)
         s.append('User        = %s' % self.user)
         s.append('Passwd      = %s' % self.passwd)
         s.append('Prompt      = %s' % self.prompt)
         s.append('Timeout     = %s' % self.timeout)
         s.append('Log_file    = %s' % self.log_file)
-=======
-        s.append('Mode         = %s' % self.mode)
-        s.append('IP           = %s' % self.ip)
-        s.append('Port         = %s' % self.port)
-        s.append('User         = %s' % self.user)
-        s.append('Passwd       = %s' % self.passwd)
-        s.append('Prompt       = %s' % self.prompt)
-        s.append('Timeout      = %s' % self.timeout)
-        s.append('Log_file     = %s' % self.log_file)
->>>>>>> 6da412c137e597795d30f29f71085ccb33cf49fe
         for i in self.cli_list:
             s.append('CLI         = %s' % i)
         s.append('Config_file = %s' % self.config_file)
