@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python
+﻿  #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
 # Author: Will
 
@@ -67,7 +67,7 @@ class ExpectConnect(object):
             self.child.logfile_read = sys.stdout
         else:
             self.child.logfile_read = self.f_o
-        #maybe we can add retry in index 0 and 1
+        # maybe we can add retry in index 0 and 1
         if self.exec_index == 0:
             self.is_error = True
             info('''[LOGIN-SSH]From 'SSH CMD' jump to is_error, Timeout''', self.is_info)
@@ -108,7 +108,7 @@ class ExpectConnect(object):
         else:
             self.child.logfile_read = self.f_o
         
-        #maybe we can add retry in index 0 and 1
+        # maybe we can add retry in index 0 and 1
         if self.exec_index == 0:
             self.is_error = True
             info('''[LOGIN-TELNET]From 'TELNET CMD' jump to is_error, Timeout''', self.is_info)
@@ -146,7 +146,7 @@ class ExpectConnect(object):
         self._basic_login()
 
     def _basic_login(self):
-        #default is retry 5 times and the interval is 5s
+        # default is retry 5 times and the interval is 5s
         if self.is_user:
             info('[LOGIN-USER]Meet user,send user to confirm login', self.is_info)
             self._retry_not_expect(self.user, 'sendline', [pexpect.TIMEOUT, '[Pp]assword.*'])
@@ -242,7 +242,7 @@ class ExpectConnect(object):
             info('''[LOGOUT]TELNET Logout Process''', self.is_info)
             self._retry_not_expect_list(']', 'sendcontrol', [pexpect.TIMEOUT, 'telnet>.*'], noexp_index_list=[0])
             if self.exec_index == 0:
-                #send this cli again to confirm logout
+                # send this cli again to confirm logout
                 self._retry_not_expect_list(']', 'sendcontrol', [pexpect.TIMEOUT, 'telnet>.*'], noexp_index_list=[0])
                 if self.exec_index == 0:
                     raise ValueError, '''Logout timeout Error'''
@@ -349,7 +349,7 @@ class ExpectConnect(object):
         self.is_error = False
 
     def _cli(self):
-        #the clis in config file will be added to the end of cli list
+        # the clis in config file will be added to the end of cli list
         self.exec_cli_list = self.cli_list
         if self.config_file:
             with open(self.config_file) as f_o:

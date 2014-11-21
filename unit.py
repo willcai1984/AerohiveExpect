@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python
+﻿  #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
 # Author: Will
 
@@ -44,7 +44,7 @@ def str2list(string):
     p_list = string.split(',')
     int_reg = re.compile('^\d+')
     ran_reg = re.compile('^\d+-\d+$')
-    #remove not int para and blank
+    # remove not int para and blank
     i_list = [i.replace(' ', '') for i in p_list if int_reg.search(i)]
     str_list = []
     for i in i_list:
@@ -62,12 +62,12 @@ def str2list(string):
 Special cli process
 '''
 def generate_cli_mode_expect_timeout_wait_list(cli_list, prompt, timeout, wait, passwd='', sp=''):
-    #define private parameters
+    # define private parameters
     cli_mode_expect_timeout_wait_list = [] 
     reboot_timeout = 300
     save_img_timeout = 1200
     mode = 'sendline'
-    #def special clis
+    # def special clis
     log_regex = re.compile('^show log.*')
     reset_config_regex = re.compile('^reset config$')
     reset_boot_regex = re.compile('^reset config bootstrap$') 
@@ -87,7 +87,7 @@ def generate_cli_mode_expect_timeout_wait_list(cli_list, prompt, timeout, wait, 
     scp_toconfig_regex = re.compile('^save config (current|bootstrap) scp.*')
     scp_fromconfig_regex = re.compile('^save config scp.* (current|bootstrap)')
     scp_transfer_regex = re.compile(r'> *scp:')
-    #process special clis
+    # process special clis
     for cli in cli_list:        
         if log_regex.search(cli):
             cli_mode_expect_timeout_wait_list.append((cli, mode, '\w+.*', timeout, wait))
