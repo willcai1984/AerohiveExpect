@@ -41,12 +41,23 @@ class ExpectConnect(object):
 
     def __str__(self):
         s = []
+<<<<<<< HEAD
         s.append('IP          = %s' % self.ip)
         s.append('User        = %s' % self.user)
         s.append('Passwd      = %s' % self.passwd)
         s.append('Prompt      = %s' % self.prompt)
         s.append('Timeout     = %s' % self.timeout)
         s.append('Log_file    = %s' % self.log_file)
+=======
+        s.append('Mode         = %s' % self.mode)
+        s.append('IP           = %s' % self.ip)
+        s.append('Port         = %s' % self.port)
+        s.append('User         = %s' % self.user)
+        s.append('Passwd       = %s' % self.passwd)
+        s.append('Prompt       = %s' % self.prompt)
+        s.append('Timeout      = %s' % self.timeout)
+        s.append('Log_file     = %s' % self.log_file)
+>>>>>>> 6da412c137e597795d30f29f71085ccb33cf49fe
         for i in self.cli_list:
             s.append('CLI         = %s' % i)
         s.append('Config_file = %s' % self.config_file)
