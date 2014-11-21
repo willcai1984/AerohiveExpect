@@ -33,6 +33,8 @@ class ExpectConnect(object):
         self._cli()
         self._port()
         self._logfile_init()
+        #use str(self) to print __str__ value
+        info('Expect Args\n' + str(self), self.is_info)
 
     def __del__(self):
         if self.child:
