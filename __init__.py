@@ -380,5 +380,5 @@ class ExpectConnect(object):
             p3 = '\r'
             p = '''%s|%s|%s''' % (p1, p2, p3)
             f_r = re.sub(p, '', f_r)
-            with open(self.log_file, mode='r') as f_o:
+            with open(self.log_file, mode='w') as f_o:
                 f_o.write(f_r) 
