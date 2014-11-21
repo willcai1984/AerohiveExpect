@@ -13,9 +13,7 @@ from unit import sleep, debug, info, warn, error, str2list, generate_cli_mode_ex
 class ExpectConnect(object):
     def __init__(self):
         self.args = ExpectArgs()
-        self.mode = self.args.mode
         self.ip = self.args.ip
-        self.port = self.args.port
         self.user = self.args.user
         self.passwd = self.args.passwd
         self.prompt = self.args.prompt
@@ -25,14 +23,15 @@ class ExpectConnect(object):
         self.config_file = self.args.config_file
         self.wait = self.args.wait
         self.retry = self.args.retry
-        self.sp = self.args.sp
+        self.para_dict=self.args.para_dict
         self.debug_level = self.args.debug_level
         self.child = None
         self._debug()
         self._tag()
         self._cli()
-        self._port()
         self._logfile_init()
+        #use str(self) to print __str__ value
+        info('Expect Args\n' + str(self), self.is_info)
 
     def __del__(self):
         if self.child:
@@ -42,27 +41,25 @@ class ExpectConnect(object):
 
     def __str__(self):
         s = []
-        s.append('Mode         = %s' % self.mode)
-        s.append('IP           = %s' % self.browser_type)
-        s.append('Port         = %s' % self.log_level)
-        s.append('User         = %s' % self.log_file)
-        s.append('Passwd       = %s' % self.log_pic_dir)
-        s.append('Prompt       = %s' % str(self.para_dict))
-        s.append('Timeout      = %s' % self.preserve_session)
-        s.append('Log_file     = %s' % self.session_id)
+        s.append('IP          = %s' % self.ip)
+        s.append('User        = %s' % self.user)
+        s.append('Passwd      = %s' % self.passwd)
+        s.append('Prompt      = %s' % self.prompt)
+        s.append('Timeout     = %s' % self.timeout)
+        s.append('Log_file    = %s' % self.log_file)
         for i in self.cli_list:
-            s.append('CLI          = %s' % i)
-        s.append('Config_file  = %s' % self.config_file)
-        s.append('Wait         = %s' % self.wait)
-        s.append('Retry        = %s' % self.retry)
-        s.append('Shell_passwd = %s' % self.sp)
-        s.append('Debug_level  = %s' % self.debug_level)
+            s.append('CLI         = %s' % i)
+        s.append('Config_file = %s' % self.config_file)
+        s.append('Wait        = %s' % self.wait)
+        s.append('Retry       = %s' % self.retry)
+        s.append('PARA_Dict   = %s' % str(self.para_dict))
+        s.append('Debug_level = %s' % self.debug_level)
         return '\n'.join(s)
 
 
     def ssh_login(self):
         info('''[LOGIN-SSH]Send cli to login target''', self.is_info)
-        self._retry_not_expect('ssh %s@%s -p %s' % (self.user, self.ip, self.port) , 'sendline', [pexpect.TIMEOUT, 'Connection timed out|No route to host.*', 'continue connecting .*\?', '[Pp]assword:', self.prompt])
+        self._retry_not_expect('ssh %s@%s' % (self.user, self.ip) , 'sendline', [pexpect.TIMEOUT, 'Connection timed out|No route to host.*', 'continue connecting .*\?', '[Pp]assword:', self.prompt])
         if self.log_file == 'stdout':
             self.child.logfile_read = sys.stdout
         else:
@@ -98,51 +95,6 @@ class ExpectConnect(object):
             info('''[LOGIN-SSH]Cannot match any option in expect list''', self.is_info)
             self.is_error = True
             info('''[LOGIN-SSH]From 'SSH CMD' jump to is_error, Unknow error''', self.is_info)
-        self._basic_login()
-
-    def telnet_login(self):
-        info('''[LOGIN-TELNET]Send cli to login target''', self.is_info)
-        self._retry_not_expect('telnet %s %s' % (self.ip, self.port) , 'sendline', [pexpect.TIMEOUT, 'No route to host.*', 'Unable .* Connection refused.*', 'Escape character is.*'])
-        if self.log_file == 'stdout':
-            self.child.logfile_read = sys.stdout
-        else:
-            self.child.logfile_read = self.f_o
-        
-        # maybe we can add retry in index 0 and 1
-        if self.exec_index == 0:
-            self.is_error = True
-            info('''[LOGIN-TELNET]From 'TELNET CMD' jump to is_error, Timeout''', self.is_info)
-        elif self.exec_index == 1:
-            self.is_error = True
-            info('''[LOGIN-TELNET]From 'TELNET CMD' jump to is_error, NoRoute''', self.is_info)
-        elif self.exec_index == 2:
-            self.is_error = True
-            info('''[LOGIN-TELNET]From 'TELNET CMD' jump to is_error, ConnectRefused''', self.is_info)
-        elif self.exec_index == 3:
-            info('''[LOGIN-TELNET]Send 'TELNET CMD' successfully, meet Escape''', self.is_info)
-            self._retry_not_expect('' , 'sendline', [pexpect.TIMEOUT, pexpect.EOF, 'login.*', '[Pp]assword.*', 'yes\|no>:.*', self.prompt])
-            if self.exec_index == 0:
-                self.is_error = True
-                info('''[LOGIN-TELNET]From 'Enter' jump to is_error, Timeout''', self.is_info)
-            elif self.exec_index == 1:
-                self.is_error = True
-                info('''[LOGIN-TELNET]From 'Enter' jump to is_error, VMOSInActive''', self.is_info)
-            elif self.exec_index == 2:
-                self.is_user = True
-                info('''[LOGIN-TELNET]From 'Enter' jump to is_user''', self.is_info)
-            elif self.exec_index == 3:
-                self.is_passwd = True
-                info('''[LOGIN-TELNET]From 'Enter' jump to is_passwd''', self.is_info)
-            elif self.exec_index == 4:
-                self.is_no = True
-                info('''[LOGIN-TELNET]From 'Enter' jump to is_no''', self.is_info)
-            elif self.exec_index == 5:
-                self.is_prompt = True
-                info('''[LOGIN-TELNET]From 'Enter' jump to is_prompt''', self.is_info)
-        else:
-            info('''[LOGIN-TELNET]Cannot match any option in expect list''', self.is_info)
-            self.is_error = True
-            info('''[LOGIN-TELNET]From 'TELNET CMD' jump to is_error, Unknow error''', self.is_info)
         self._basic_login()
 
     def _basic_login(self):
@@ -200,7 +152,7 @@ class ExpectConnect(object):
             info('''[LOGIN-ERROR]AFTER is : %s''' % self.child.after, self.is_info)
             raise ValueError, '''Login Error'''
 
-    def _basic_exec(self):
+    def basic_exec(self):
         for cli, mode, expect, timeout, wait in self.c_m_e_t_w_list:
             exec_cli = '''self.child.%s(cli)''' % mode
             exec(exec_cli)
@@ -230,7 +182,7 @@ class ExpectConnect(object):
                     raise ValueError, '''Exec Error'''
             sleep(wait)
                 
-    def _basic_logout(self):
+    def basic_logout(self):
         if self.mode == 'ssh':
             info('''[LOGOUT]SSH Logout Process''', self.is_info)
             self._retry_not_expect_list('d', 'sendcontrol', [pexpect.TIMEOUT, 'Connection to .* closed'], noexp_index_list=[0], retrymode='repeat')
@@ -357,14 +309,7 @@ class ExpectConnect(object):
             self.exec_cli_list.extend(f_r_list)
         self.c_m_e_t_w_list = generate_cli_mode_expect_timeout_wait_list(self.exec_cli_list, self.prompt, self.timeout, self.wait, self.passwd, self.sp)
 
-    def _port(self):
-        # Due to the port can be used for either ssh or telnet, we should set its default value here
-        # If you have set the value, it is no influnce here
-        if self.port == -1:
-            if self.mode == 'ssh':
-                self.port = 22
-            elif self.mode == 'telnet':
-                self.port = 23
+
     def _logfile_init(self):
         self.f_o = None
         if self.log_file != 'stdout':
@@ -382,3 +327,7 @@ class ExpectConnect(object):
             f_r = re.sub(p, '', f_r)
             with open(self.log_file, mode='w') as f_o:
                 f_o.write(f_r) 
+
+    def value(self, key):
+        if self.para_dict.has_key(key):
+            return self.para_dict[key]

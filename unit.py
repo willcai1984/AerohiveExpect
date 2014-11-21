@@ -3,9 +3,42 @@
 # Author: Will
 
 try:
-    import re, time
+    import re, time, sys, os, json
 except ImportError, e:
     raise ImportError (str(e) + """A critical module was not found. Probably this operating system does not support it.""")
+
+'''
+Get the default data file name
+'''
+def get_default_data_file():
+    test = sys.argv[0]
+    test_dir, test_file = os.path.split(test)
+    return os.path.join(test_dir, '%s.json' % os.path.splitext(test_file)[0])
+
+'''
+Get data from json file
+'''
+def josn_process(j_f):
+    with open(j_f) as f_o:
+        f_r = f_o.read()
+    f_j = json.loads(f_r)
+    j_dict = {}
+    if f_j:
+        for key1 in f_j:
+            if type(f_j[key1]) == type({}):
+                for key2 in f_j[key1]:
+                    if type(f_j[key1][key2]) == type({}):
+                        raise AssertionError, '''Cannot support 3rd json "%s" now''' % f_j[key1][key2]
+                    elif type(f_j[key1][key2]) == type('') or type(f_j[key1][key2]) == type(u''):
+                        j_dict['%s.%s' % (key1, key2)] = f_j[key1][key2]
+                    else:
+                        raise AssertionError, '''Key "%s" and Value "%s" is not as expect''' % (key2, f_j[key1][key2])
+            elif  type(f_j[key1]) == type('') or  type(f_j[key1]) == type(u''):
+                j_dict[key1] = f_j[key1]
+            else:
+                raise AssertionError, '''Key "%s" and Value "%s" is not as expect''' % (key1, f_j[key1])
+    return j_dict
+
 
 '''
 Sleep
