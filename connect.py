@@ -10,8 +10,8 @@ def connect_exec():
         connect.ssh_login()
     elif connect.mode == 'telnet':
         connect.telnet_login()
-    connect._basic_exec()
-    connect._basic_logout()
+    connect.basic_exec()
+    connect.basic_logout()
 
 if __name__ == '__main__':
     connect_exec()

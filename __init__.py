@@ -202,7 +202,7 @@ class ExpectConnect(object):
             info('''[LOGIN-ERROR]AFTER is : %s''' % self.child.after, self.is_info)
             raise ValueError, '''Login Error'''
 
-    def _basic_exec(self):
+    def basic_exec(self):
         for cli, mode, expect, timeout, wait in self.c_m_e_t_w_list:
             exec_cli = '''self.child.%s(cli)''' % mode
             exec(exec_cli)
@@ -232,7 +232,7 @@ class ExpectConnect(object):
                     raise ValueError, '''Exec Error'''
             sleep(wait)
                 
-    def _basic_logout(self):
+    def basic_logout(self):
         if self.mode == 'ssh':
             info('''[LOGOUT]SSH Logout Process''', self.is_info)
             self._retry_not_expect_list('d', 'sendcontrol', [pexpect.TIMEOUT, 'Connection to .* closed'], noexp_index_list=[0], retrymode='repeat')
