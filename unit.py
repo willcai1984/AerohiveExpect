@@ -71,21 +71,40 @@ def error(msg, is_error):
 
 '''
 Transfer str to list
-for example: input is '1,3,5-8,10', output is [1,3,5,6,7,8,10]
+for example: 
+>>> str2list('1,3,5-8,10')
+['1', '3', '5', '6', '7', '8', '10']
+
+>>> str2list('vm001,vm003-vm005,vm007')
+['vm001', 'vm003', 'vm004', 'vm005', 'vm007']
 '''
 def str2list(string):
     p_list = string.split(',')
-    int_reg = re.compile('^\d+')
-    ran_reg = re.compile('^\d+-\d+$')
+    para_reg = re.compile('^\w+')
+    ran_reg = re.compile('^\w+-\w+$')
+    str_reg = re.compile('\D*')
+    int_reg = re.compile('\d+')
     # remove not int para and blank
-    i_list = [i.replace(' ', '') for i in p_list if int_reg.search(i)]
+    i_list = [i.replace(' ', '') for i in p_list if para_reg.search(i)]
     str_list = []
     for i in i_list:
         if ran_reg.search(i):
-            ran_start = int(i.split('-')[0])
-            ran_end = int(i.split('-')[-1])
-            for j in range(ran_start, ran_end + 1):
-                str_list.append(str(j))
+            ran_list = i.split('-')
+            ran_start = ran_list[0]
+            str_start = str_reg.search(ran_start).group()
+            int_start = int_reg.search(ran_start).group()
+            ran_end = ran_list[-1]
+            str_end = str_reg.search(ran_end).group()
+            int_end = int_reg.search(ran_end).group()
+            for j in range(int(int_start), int(int_end) + 1):
+                para = str(j)
+                if str_start and str_start == str_end:
+                    int_len = len(int_start)
+                    int_j = ''
+                    int_cli = '''int_j="%0''' + str(int_len) + '''d" % j'''
+                    exec(int_cli)
+                    para = str_start + str(int_j)
+                str_list.append(para)
         else:
             str_list.append(str(i))
     return str_list
