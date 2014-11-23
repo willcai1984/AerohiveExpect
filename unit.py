@@ -78,8 +78,8 @@ for example:
 >>> str2list('vm001,vm003-vm005,vm007')
 ['vm001', 'vm003', 'vm004', 'vm005', 'vm007']
 '''
-def str2list(string):
-    p_list = string.split(',')
+def str2list(list_str):
+    p_list = list_str.split(',')
     para_reg = re.compile('^\w+')
     ran_reg = re.compile('^\w+-\w+$')
     str_reg = re.compile('\D*')
