@@ -1,6 +1,7 @@
 AerohiveExpect
 ==============
 This lib is based on pexpect, so it can be used on linux server only. Be careful!
+
 For example:
 SSH target(10.68.101.103) execute cmds(show run)
 root@Linux227:/home/will/git/AerohiveExpect# python connect.py -i '10.68.101.103' -c 'show run' --debug info
