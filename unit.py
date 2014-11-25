@@ -219,4 +219,3 @@ def generate_cli_mode_expect_timeout_wait_list(cli_list, prompt, timeout, wait, 
         else:
             cli_mode_expect_timeout_wait_list.append((cli, mode, prompt, timeout, wait))
     return cli_mode_expect_timeout_wait_list
-
