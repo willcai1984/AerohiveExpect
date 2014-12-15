@@ -36,8 +36,11 @@ class ExpectArgs(object):
         self.parser.add_argument('-l', '--logfile', required=False, default='stdout', dest='log_file',
                             help='The log file path')
         
-        self.parser.add_argument('-c', '--command', required=False, action='append', default=[], dest='cli_list',
+        self.parser.add_argument('-c', '--cli', required=False, action='append', default=[], dest='cli_list',
                             help='The command you want to execute')
+
+        self.parser.add_argument('-cr', '--clirange', required=False, action='append', default=[], dest='cli_range_list',
+                            help='The cli range you want to execute, example: "vlan1%%10" will extend to vlan1,vlan2..vlan10')
 
         self.parser.add_argument('-f', '--file', required=False, default=False, dest='config_file',
                             help='The path of configurefile')
@@ -67,6 +70,7 @@ class ExpectArgs(object):
         self.timeout = self.args.timeout
         self.log_file = self.args.log_file
         self.cli_list = self.args.cli_list
+        self.cli_range_list = self.args.cli_range_list
         self.config_file = self.args.config_file
         self.wait = self.args.wait
         self.retry = self.args.retry
