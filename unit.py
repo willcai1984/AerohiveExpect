@@ -3,9 +3,42 @@
 # Author: Will
 
 try:
-    import re, time
+    import re, time, sys, os, json
 except ImportError, e:
     raise ImportError (str(e) + """A critical module was not found. Probably this operating system does not support it.""")
+
+'''
+Get the default data file name
+'''
+def get_default_data_file():
+    test = sys.argv[0]
+    test_dir, test_file = os.path.split(test)
+    return os.path.join(test_dir, '%s.json' % os.path.splitext(test_file)[0])
+
+'''
+Get data from json file
+'''
+def josn_process(j_f):
+    with open(j_f) as f_o:
+        f_r = f_o.read()
+    f_j = json.loads(f_r)
+    j_dict = {}
+    if f_j:
+        for key1 in f_j:
+            if type(f_j[key1]) == type({}):
+                for key2 in f_j[key1]:
+                    if type(f_j[key1][key2]) == type({}):
+                        raise AssertionError, '''Cannot support 3rd json "%s" now''' % f_j[key1][key2]
+                    elif type(f_j[key1][key2]) == type('') or type(f_j[key1][key2]) == type(u''):
+                        j_dict['%s.%s' % (key1, key2)] = f_j[key1][key2]
+                    else:
+                        raise AssertionError, '''Key "%s" and Value "%s" is not as expect''' % (key2, f_j[key1][key2])
+            elif  type(f_j[key1]) == type('') or  type(f_j[key1]) == type(u''):
+                j_dict[key1] = f_j[key1]
+            else:
+                raise AssertionError, '''Key "%s" and Value "%s" is not as expect''' % (key1, f_j[key1])
+    return j_dict
+
 
 '''
 Sleep
@@ -38,21 +71,40 @@ def error(msg, is_error):
 
 '''
 Transfer str to list
-for example: input is '1,3,5-8,10', output is [1,3,5,6,7,8,10]
+for example: 
+>>> str2list('1,3,5-8,10')
+['1', '3', '5', '6', '7', '8', '10']
+
+>>> str2list('vm001,vm003-vm005,vm007')
+['vm001', 'vm003', 'vm004', 'vm005', 'vm007']
 '''
-def str2list(string):
-    p_list = string.split(',')
-    int_reg = re.compile('^\d+')
-    ran_reg = re.compile('^\d+-\d+$')
+def str2list(list_str):
+    p_list = list_str.split(',')
+    para_reg = re.compile('^\w+')
+    ran_reg = re.compile('^\w+-\w+$')
+    str_reg = re.compile('\D*')
+    int_reg = re.compile('\d+')
     # remove not int para and blank
-    i_list = [i.replace(' ', '') for i in p_list if int_reg.search(i)]
+    i_list = [i.replace(' ', '') for i in p_list if para_reg.search(i)]
     str_list = []
     for i in i_list:
         if ran_reg.search(i):
-            ran_start = int(i.split('-')[0])
-            ran_end = int(i.split('-')[-1])
-            for j in range(ran_start, ran_end + 1):
-                str_list.append(str(j))
+            ran_list = i.split('-')
+            ran_start = ran_list[0]
+            str_start = str_reg.search(ran_start).group()
+            int_start = int_reg.search(ran_start).group()
+            ran_end = ran_list[-1]
+            str_end = str_reg.search(ran_end).group()
+            int_end = int_reg.search(ran_end).group()
+            for j in range(int(int_start), int(int_end) + 1):
+                para = str(j)
+                if str_start and str_start == str_end:
+                    int_len = len(int_start)
+                    int_j = ''
+                    int_cli = '''int_j="%0''' + str(int_len) + '''d" % j'''
+                    exec(int_cli)
+                    para = str_start + str(int_j)
+                str_list.append(para)
         else:
             str_list.append(str(i))
     return str_list
@@ -167,4 +219,3 @@ def generate_cli_mode_expect_timeout_wait_list(cli_list, prompt, timeout, wait, 
         else:
             cli_mode_expect_timeout_wait_list.append((cli, mode, prompt, timeout, wait))
     return cli_mode_expect_timeout_wait_list
-
