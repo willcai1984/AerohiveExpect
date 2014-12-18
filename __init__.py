@@ -34,7 +34,7 @@ class ExpectConnect(object):
         self._cli()
         self._port()
         self._logfile_init()
-        #use str(self) to print __str__ value
+        # use str(self) to print __str__ value
         info('Expect Args\n' + str(self), self.is_info)
 
     def __del__(self):
@@ -364,7 +364,7 @@ class ExpectConnect(object):
                 if '%%' in c_r:
                     c_b = re.search('(\d+)%%\d+', c_r).group(1)
                     c_e = re.search('\d+%%(\d+)', c_r).group(1)
-                    for i in range(int(c_b), int(c_e)):
+                    for i in range(int(c_b), int(c_e) + 1):
                         cli = re.sub('\d+%%\d+', str(i), c_r)
                         self.exec_cli_list.append(cli)
                 else:
