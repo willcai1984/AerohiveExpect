@@ -41,6 +41,7 @@ class ExpectConnect(object):
             self.child.close(force=True)
         if self.f_o:
             self._logfile_process()
+        info('''Connect Part Done''', self.is_info)
 
     def __str__(self):
         s = []
