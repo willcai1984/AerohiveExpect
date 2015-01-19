@@ -361,11 +361,23 @@ class ExpectConnect(object):
         if self.cli_range_list:
             for c_r in self.cli_range_list:
                 if '%%' in c_r:
-                    c_b = re.search('(\d+)%%\d+', c_r).group(1)
-                    c_e = re.search('\d+%%(\d+)', c_r).group(1)
-                    for i in range(int(c_b), int(c_e)):
-                        cli = re.sub('\d+%%\d+', str(i), c_r)
-                        self.exec_cli_list.append(cli)
+                    #Add support %%x mode for only 1 cli repeat x times
+                    #c_b = re.search('(\d+)%%\d+', c_r).group(1)
+                    #c_e = re.search('\d+%%(\d+)', c_r).group(1)
+                    try:
+                        c_b = re.search('(\d+)%%\d+', c_r).group(1)
+                        #AttributeError: 'NoneType' object has no attribute 'group'
+                    except AttributeError, e:
+                        c_b = ''
+                    c_e = re.search('%%(\d+)', c_r).group(1)    
+                    if c_b:  
+                        for i in range(int(c_b), int(c_e)):
+                            cli = re.sub('\d+%%\d+', str(i), c_r)
+                            self.exec_cli_list.append(cli)
+                    else:
+                        cli = re.sub('\s+%%\d+', '', c_r)
+                        for i in range(int(c_e)):
+                            self.exec_cli_list.append(cli)             
                 else:
                     self.exec_cli_list.append(c_r)
         self.c_m_e_t_w_list = generate_cli_mode_expect_timeout_wait_list(self.exec_cli_list, self.prompt, self.timeout, self.wait, self.passwd, self.sp)
