@@ -360,6 +360,10 @@ class ExpectConnect(object):
             self.exec_cli_list.extend(f_r_list)
         if self.cli_range_list:
             for c_r in self.cli_range_list:
+                if '%*' in c_r:
+                    c_i = re.search('(\S)%*\d+', c_r).group(1)
+                    c_n = re.search('%*(\d+)', c_r).group(1)
+                    c_r = re.sub('\S%*\d+', c_i * int(c_n), c_r)
                 if '%%' in c_r:
                     #Add support %%x mode for only 1 cli repeat x times
                     #c_b = re.search('(\d+)%%\d+', c_r).group(1)
