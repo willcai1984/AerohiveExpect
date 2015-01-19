@@ -370,7 +370,7 @@ class ExpectConnect(object):
                     except AttributeError, e:
                         c_b = ''
                     c_e = re.search('%%(\d+)', c_r).group(1)    
-                    if c_b:  
+                    if c_b:
                         for i in range(int(c_b), int(c_e)):
                             cli = re.sub('\d+%%\d+', str(i), c_r)
                             self.exec_cli_list.append(cli)
