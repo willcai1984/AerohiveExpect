@@ -3,7 +3,7 @@
 # Author: Will
 
 try:
-    import pexpect, sys, argparse, re, time
+    import pexpect, sys, argparse, re, time, os
 except ImportError, e:
     raise ImportError (str(e) + """A critical module was not found. Probably this operating system does not support it.""")
 
@@ -65,6 +65,7 @@ class ExpectConnect(object):
 
     def ssh_login(self):
         info('''[LOGIN-SSH]Send cli to login target''', self.is_info)
+        os.system("rm -f /root/.ssh/known_hosts")
         self._retry_not_expect('ssh %s@%s -p %s' % (self.user, self.ip, self.port) , 'sendline', [pexpect.TIMEOUT, 'Connection timed out|No route to host.*', 'continue connecting .*\?', '[Pp]assword:', self.prompt])
         if self.log_file == 'stdout':
             self.child.logfile_read = sys.stdout
@@ -362,7 +363,7 @@ class ExpectConnect(object):
                 f_r_list = f_o.readlines()
             self.exec_cli_list.extend(f_r_list)
         if self.cli_range_list:
-            cli_list=[]
+            cli_list = []
             for c_r in self.cli_range_list:
                 if '%*' in c_r:
                     c_i = re.search('(\S)%\*\d+', c_r).group(1)
