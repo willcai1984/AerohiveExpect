@@ -256,6 +256,7 @@ class ExpectConnect(object):
                     raise ValueError, '''Logout timeout Error'''
                 elif self.exec_index == 1:
                     info('''[LOGOUT]TELNET Logout successfully''', self.is_info)
+        info('''[LOGOUT]Connect Part Done''', self.is_info)
 
     def _retry_not_expect(self, cli, mode, exp_list, noexp_index=0, retrymode='enter', retry=5, interval=5):
         if self.child:
